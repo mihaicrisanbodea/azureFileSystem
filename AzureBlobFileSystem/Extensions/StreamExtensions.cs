@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace AzureBlobFileSystem.Extensions
 {
@@ -6,7 +7,12 @@ namespace AzureBlobFileSystem.Extensions
     {
         public static byte[] ToByteArray(this Stream input)
         {
-            byte[] buffer = new byte[16 * 1024];
+            if (input == null)
+            {
+                throw new ArgumentException("Stream cannot null");
+            }
+
+            var buffer = new byte[16 * 1024];
             using (MemoryStream ms = new MemoryStream())
             {
                 int read;

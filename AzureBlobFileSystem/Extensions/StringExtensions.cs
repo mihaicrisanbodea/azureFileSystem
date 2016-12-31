@@ -4,8 +4,12 @@ namespace AzureBlobFileSystem.Extensions
 {
     public static class StringExtensions
     {
-        public static string ReplaceFirstOccurence(this string value, string oldValue, string newValue)
+        public static string ReplaceFirstOccurrence(this string value, string oldValue, string newValue)
         {
+            ValidateString(value, nameof(value));
+            ValidateString(oldValue, nameof(oldValue));
+            ValidateString(newValue, nameof(newValue));
+
             var valueLength = value.Length;
             var oldValueLength = oldValue.Length;
 
@@ -22,7 +26,15 @@ namespace AzureBlobFileSystem.Extensions
             }
 
             var suffix = value.Remove(startIndex, oldValueLength + 1);
-            return string.Format("{0}/{1}", newValue, suffix);
+            return $"{newValue}/{suffix}";
+        }
+
+        private static void ValidateString(string value, string valueName)
+        {
+            if (value == null)
+            {
+                throw new ArgumentException(valueName);
+            }
         }
     }
 }

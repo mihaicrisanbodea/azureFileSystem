@@ -9,5 +9,7 @@
         string DefaultFileName { get; }
 
         string UtcTimeFormat { get; }
+
+        int BlobListingPageSize { get; }
     }
 }

@@ -16,14 +16,17 @@ namespace AzureBlobFileSystem.Implementation
         private readonly IAzureStorageProvider _azureStorageProvider;
         private readonly IPathValidationService _pathValidationService;
         private readonly IConfiguration _configuration;
+        private readonly IFileInfoService _fileInfoService;
 
         public StorageFileService(IAzureStorageProvider azureStorageProvider, 
             IPathValidationService pathValidationService, 
-            IConfiguration configuration)
+            IConfiguration configuration, 
+            IFileInfoService fileInfoService)
         {
             _azureStorageProvider = azureStorageProvider;
             _pathValidationService = pathValidationService;
             _configuration = configuration;
+            _fileInfoService = fileInfoService;
         }
 
         public FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null)
@@ -56,12 +59,12 @@ namespace AzureBlobFileSystem.Implementation
                     : BlobListingDetails.None;
 
                 var blobResultSegment = container.ListBlobsSegmented(prefix, true,
-                    listingDetails, 500, token, null, null);
+                    listingDetails, _configuration.BlobListingPageSize, token, null, null);
 
                 token = blobResultSegment.ContinuationToken;
-                IEnumerable<IListBlobItem> blobsList = blobResultSegment.Results;
-                var tasks = Parse(blobsList, includeMetadata);
-                fileInfoItems.AddRange(tasks);
+                IEnumerable<IListBlobItem> blobItems = blobResultSegment.Results;
+                var fileInfoList = _fileInfoService.Build(blobItems, includeMetadata);
+                fileInfoItems.AddRange(fileInfoList);
             } while (token != null);
 
             return fileInfoItems;
@@ -121,75 +124,29 @@ namespace AzureBlobFileSystem.Implementation
             }
             else
             {
-                
-                if (blobMetadata != null)
-                {
-                    var blobMeta = blobMetadata.Metadata.Where(m => !string.IsNullOrWhiteSpace(m.Value)).ToList();
-                    if (blobMeta.Any())
-                    {
-                        foreach (var metadata in blobMeta)
-                        {
-                            if (string.IsNullOrWhiteSpace(metadata.Value))
-                            {
-                                continue;
-                            }
-                            blob.Metadata.Add(metadata.Key, metadata.Value);
-                        }
-                    }
-                }
+                TrySetMetadata(blob, blobMetadata);
                 blob.UploadFromStream(stream);
             }
         }
 
-        private List<FileInfo> Parse(IEnumerable<IListBlobItem> blobItems, bool includeMetadata)
+        private void TrySetMetadata(CloudBlockBlob blob, BlobMetadata blobMetadata)
         {
-            var fileInfoItems = new List<FileInfo>();
-
-            foreach (var blobItem in blobItems)
+            if (blobMetadata == null)
             {
-                var cloudBlob = blobItem as CloudBlob;
-
-                if (cloudBlob == null)
-                {
-                    continue;
-                }
-
-                BlobMetadata metadata = null;
-
-                if (includeMetadata)
-                {
-                    metadata = FetchMetadata(cloudBlob);
-                }
-
-                fileInfoItems.Add(new FileInfo
-                {
-                    Metadata = metadata,
-                    RelativePath = cloudBlob.Name
-                });
+                return;
             }
 
-            return fileInfoItems;
-        }
+            var blobMeta = blobMetadata.Metadata.Where(m => !string.IsNullOrWhiteSpace(m.Value)).ToList();
 
-        private BlobMetadata FetchMetadata(CloudBlob blob)
-        {
-            var metadataResult = new BlobMetadata();
-
-            foreach (var metadata in blob.Metadata)
+            if (!blobMeta.Any())
             {
-                metadataResult.Add(metadata.Key, metadata.Value);
+                return;
             }
 
-            metadataResult.Add("size", blob.Properties.Length.ToString());
-
-            var lastModifiedDate = blob.Properties.LastModified;
-            if (lastModifiedDate != null)
+            foreach (var metadata in blobMeta)
             {
-                metadataResult.Add("modified", lastModifiedDate.Value.DateTime.ToUniversalTime()
-                    .ToString(_configuration.UtcTimeFormat));
+                blob.Metadata.Add(metadata.Key, metadata.Value);
             }
-
-            return metadataResult;
         }
     }
 }

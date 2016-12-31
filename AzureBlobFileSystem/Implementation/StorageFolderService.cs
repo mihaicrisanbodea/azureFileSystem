@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using AzureBlobFileSystem.Extensions;
 using AzureBlobFileSystem.Interface;
@@ -16,16 +14,19 @@ namespace AzureBlobFileSystem.Implementation
         private readonly IStorageFileService _storageFileService;
         private readonly IPathValidationService _pathValidationService;
         private readonly IConfiguration _configuration;
+        private readonly IFolderInfoService _folderInfoService;
 
         public StorageFolderService(IAzureStorageProvider azureStorageProvider, 
             IStorageFileService storageFileService, 
             IPathValidationService pathValidationService, 
-            IConfiguration configuration)
+            IConfiguration configuration, 
+            IFolderInfoService folderInfoService)
         {
             _azureStorageProvider = azureStorageProvider;
             _storageFileService = storageFileService;
             _pathValidationService = pathValidationService;
             _configuration = configuration;
+            _folderInfoService = folderInfoService;
         }
 
         public void Create(string path)
@@ -73,11 +74,11 @@ namespace AzureBlobFileSystem.Implementation
             do
             {
                 var blobResultSegment = container.ListBlobsSegmented(prefix, true,
-                    BlobListingDetails.None, 500, token, null, null);
+                    BlobListingDetails.None, _configuration.BlobListingPageSize, token, null, null);
                 token = blobResultSegment.ContinuationToken;
                 IEnumerable<IListBlobItem> blobsList = blobResultSegment.Results;
 
-                var folderInfoResult = ProcessBlobListItems(blobsList);
+                var folderInfoResult = _folderInfoService.Build(blobsList);
 
                 MergeDictionaries(folderInfoItems, folderInfoResult);
 
@@ -109,88 +110,6 @@ namespace AzureBlobFileSystem.Implementation
             }
         }
 
-        private Dictionary<string, FolderInfo> ProcessBlobListItems(IEnumerable<IListBlobItem> blobItems)
-        {
-            var folderInfoDictionary = new Dictionary<string, FolderInfo>();
-
-            foreach (var blobItem in blobItems)
-            {
-                var cloudBlob = blobItem as CloudBlob;
-
-                if (cloudBlob == null)
-                {
-                    continue;
-                }
-
-                var blobPathChunks = GetPathChunks(cloudBlob.Name);
-
-                if (blobPathChunks.Length <= 1)
-                {
-                    continue;
-                }
-
-                BuildFolderInfo(blobPathChunks, folderInfoDictionary);
-            }
-
-            return folderInfoDictionary;
-        }
-
-        private string[] GetPathChunks(string blobName)
-        {
-            return blobName.Split(new[] {"/"}, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        private void BuildFolderInfo(string [] pathChunks, Dictionary<string, FolderInfo> folderInfoDictionary)
-        {
-            var sb = new StringBuilder();
-            var partialDirectoryPath = string.Empty;
-            FolderInfo folderInfo;
-
-            for (var i = 0; i < pathChunks.Length - 1; i++)
-            {
-                sb.AppendFormat("{0}/", pathChunks[i]);
-                partialDirectoryPath = sb.ToString();
-                var isPathAlreadyProcessed = folderInfoDictionary.TryGetValue(partialDirectoryPath, out folderInfo);
-                if (isPathAlreadyProcessed)
-                {
-                    continue;
-                }
-
-                TryUpdateFolderCount(partialDirectoryPath, folderInfoDictionary);
-
-                folderInfoDictionary.Add(partialDirectoryPath, new FolderInfo { RelativePath = partialDirectoryPath.TrimEnd('/') });
-            }
-
-            if (string.IsNullOrWhiteSpace(partialDirectoryPath))
-            {
-                return;
-            }
-
-            sb.Append(pathChunks.Last());
-            folderInfoDictionary[partialDirectoryPath].FileCount++;
-            folderInfoDictionary[partialDirectoryPath].FileRelativePaths.Add(sb.ToString());
-        }
-
-        private void TryUpdateFolderCount(string directoryPath, Dictionary<string, FolderInfo> folderInfoDictionary)
-        {
-            var cleanPath = directoryPath.TrimEnd('/');
-            var lastIndex = cleanPath.LastIndexOf('/') + 1;
-            if (lastIndex == 0)
-            {
-                return;
-            }
-
-            var rootPath = cleanPath.Remove(lastIndex);
-            FolderInfo folderInfo;
-
-            var rootDirectoryMatch = folderInfoDictionary.TryGetValue(rootPath, out folderInfo);
-            if (rootDirectoryMatch)
-            {
-                folderInfoDictionary[rootPath].FolderCount++;
-                folderInfoDictionary[rootPath].FolderRelativePaths.Add(cleanPath);
-            }
-        }
-
         private string GetPath(CloudBlobDirectory cloudBlobDirectory)
         {
             return cloudBlobDirectory.Prefix.TrimEnd('/');
@@ -207,7 +126,7 @@ namespace AzureBlobFileSystem.Implementation
                 if (blockBlob != null)
                 {
                     var fileName = blockBlob.Name;
-                    var newFileName = fileName.ReplaceFirstOccurence(path, newPath);
+                    var newFileName = fileName.ReplaceFirstOccurrence(path, newPath);
                     await _storageFileService.Copy(container, fileName, newFileName, keepSource);
                     continue;
                 }
@@ -217,7 +136,7 @@ namespace AzureBlobFileSystem.Implementation
                 if (blobDirectory != null)
                 {
                     var folderPath = GetPath(blobDirectory);
-                    var newFolderPathSuffix = folderPath.ReplaceFirstOccurence(path, string.Empty);
+                    var newFolderPathSuffix = folderPath.ReplaceFirstOccurrence(path, string.Empty);
                     await CopyRecursively(folderPath, $"{newPath}{newFolderPathSuffix}", keepSource);
                 }
             }
