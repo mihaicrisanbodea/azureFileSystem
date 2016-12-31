@@ -14,87 +14,53 @@ namespace AzureBlobFileSystem.Implementation
     {
         private readonly IAzureStorageProvider _azureStorageProvider;
         private readonly IStorageFileService _storageFileService;
-        private const string DefaultFileName = "temp.tmp";
+        private readonly IPathValidationService _pathValidationService;
+        private readonly IConfiguration _configuration;
 
         public StorageFolderService(IAzureStorageProvider azureStorageProvider, 
-            IStorageFileService storageFileService)
+            IStorageFileService storageFileService, 
+            IPathValidationService pathValidationService, 
+            IConfiguration configuration)
         {
             _azureStorageProvider = azureStorageProvider;
             _storageFileService = storageFileService;
+            _pathValidationService = pathValidationService;
+            _configuration = configuration;
         }
 
         public void Create(string path)
         {
             var container = _azureStorageProvider.GetContainer();
-            path = container.EnsureDirectoryDoesNotExist(path);
-
-            bool endsWithSlash = path.EndsWith("/");
-            path = endsWithSlash ? $"{path}{DefaultFileName}" :
-                                   $"{path}/{DefaultFileName}";
+            path = container.EnsureDirectoryDoesNotExist(path).TrimEnd('/');
+            path = $"{path}/{_configuration.DefaultFileName}";
 
             _storageFileService.Create(path);
         }
 
         public async Task Copy(string path, string newPath, bool keepSource = true)
         {
-            if (!keepSource && string.IsNullOrEmpty(path))
+            _pathValidationService.ValidateNotRemovingRoot(path, keepSource);
+
+            if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentException("Removing root not supported");
+                path = string.Empty;
+            }
+            else
+            {
+                _pathValidationService.ValidateDirectoryExists(path);
             }
 
-            var container = _azureStorageProvider.GetContainer();
+            _pathValidationService.ValidateDirectoryDoesNotExist(newPath);
 
-            foreach (var blob in container.GetDirectoryReference(path).ListBlobs())
-            {
-                var blockBlob = blob as CloudBlockBlob;
-                if (blockBlob != null)
-                {
-                    var fileName = blockBlob.Name;
-                    var newFileName = fileName.ReplaceFirstOccurence(path, newPath);
-                    await _storageFileService.Copy(container, fileName, newFileName, keepSource);
-                    continue;
-                }
-
-                var blobDirectory = blob as CloudBlobDirectory;
-
-                if (blobDirectory != null)
-                {
-                    var folderPath = GetPath(blobDirectory);
-                    var newFolderPathSuffix = folderPath.ReplaceFirstOccurence(path, string.Empty);
-                    await Copy(folderPath, string.Format("{0}{1}", newPath, newFolderPathSuffix), keepSource);
-                }
-            }
+            await CopyRecursively(path, newPath, keepSource);
         }
 
         public void Delete(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return;
-            }
-
-            var container = _azureStorageProvider.GetContainer();
-
-            if (!container.DirectoryExists(path))
-            {
-                return;
-            }
-
-            foreach (var blob in container.GetDirectoryReference(path).ListBlobs())
-            {
-                var blockBlob = blob as CloudBlockBlob;
-                if (blockBlob != null)
-                {
-                    blockBlob.Delete();
-                    continue;
-                }
-
-                var directory = blob as CloudBlobDirectory;
-                if (directory != null)
-                {
-                    Delete(GetPath(directory));
-                }
-            }
+            _pathValidationService.ValidateNotEmpty(path);
+            _pathValidationService.ValidateDirectoryExists(path);
+            
+            DeleteRecursively(path);
         }
 
         public List<FolderInfo> List(string prefix)
@@ -227,8 +193,56 @@ namespace AzureBlobFileSystem.Implementation
 
         private string GetPath(CloudBlobDirectory cloudBlobDirectory)
         {
-            //return cloudBlobDirectory.Prefix.TrimEnd('/');
-            return cloudBlobDirectory.Uri.ToString().Replace(cloudBlobDirectory.Container.Uri.ToString(), string.Empty).Trim('/');
+            return cloudBlobDirectory.Prefix.TrimEnd('/');
         }
+
+
+        private async Task CopyRecursively(string path, string newPath, bool keepSource)
+        {
+            var container = _azureStorageProvider.GetContainer();
+
+            foreach (var blob in container.GetDirectoryReference(path).ListBlobs())
+            {
+                var blockBlob = blob as CloudBlockBlob;
+                if (blockBlob != null)
+                {
+                    var fileName = blockBlob.Name;
+                    var newFileName = fileName.ReplaceFirstOccurence(path, newPath);
+                    await _storageFileService.Copy(container, fileName, newFileName, keepSource);
+                    continue;
+                }
+
+                var blobDirectory = blob as CloudBlobDirectory;
+
+                if (blobDirectory != null)
+                {
+                    var folderPath = GetPath(blobDirectory);
+                    var newFolderPathSuffix = folderPath.ReplaceFirstOccurence(path, string.Empty);
+                    await CopyRecursively(folderPath, $"{newPath}{newFolderPathSuffix}", keepSource);
+                }
+            }
+        }
+
+        private void DeleteRecursively(string path)
+        {
+            var container = _azureStorageProvider.GetContainer();
+
+            foreach (var blob in container.GetDirectoryReference(path).ListBlobs())
+            {
+                var blockBlob = blob as CloudBlockBlob;
+                if (blockBlob != null)
+                {
+                    blockBlob.Delete();
+                    continue;
+                }
+
+                var directory = blob as CloudBlobDirectory;
+                if (directory != null)
+                {
+                    DeleteRecursively(GetPath(directory));
+                }
+            }
+        }
+
     }
 }

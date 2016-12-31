@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,11 +14,16 @@ namespace AzureBlobFileSystem.Implementation
     public class StorageFileService : IStorageFileService
     {
         private readonly IAzureStorageProvider _azureStorageProvider;
-        private const string UtcTimeFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'";
+        private readonly IPathValidationService _pathValidationService;
+        private readonly IConfiguration _configuration;
 
-        public StorageFileService(IAzureStorageProvider azureStorageProvider)
+        public StorageFileService(IAzureStorageProvider azureStorageProvider, 
+            IPathValidationService pathValidationService, 
+            IConfiguration configuration)
         {
             _azureStorageProvider = azureStorageProvider;
+            _pathValidationService = pathValidationService;
+            _configuration = configuration;
         }
 
         public FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null)
@@ -71,10 +75,8 @@ namespace AzureBlobFileSystem.Implementation
 
         public async Task Copy(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource)
         {
-            if (!container.FileExists(sourcePath))
-            {
-                throw new ArgumentException("File does not exist at path", sourcePath);
-            }
+            _pathValidationService.ValidateFileExists(sourcePath, container);
+            _pathValidationService.ValidateFileDoesNotExist(destinationPath, container);
 
             destinationPath = container.EnsureFileDoesNotExist(destinationPath);
             var source = container.GetBlockBlobReference(sourcePath);
@@ -90,6 +92,7 @@ namespace AzureBlobFileSystem.Implementation
 
         public void Delete(string path)
         {
+            _pathValidationService.ValidateFileExists(path);
             var container = _azureStorageProvider.GetContainer();
 
             if (!container.FileExists(path))
@@ -183,7 +186,7 @@ namespace AzureBlobFileSystem.Implementation
             if (lastModifiedDate != null)
             {
                 metadataResult.Add("modified", lastModifiedDate.Value.DateTime.ToUniversalTime()
-                    .ToString(UtcTimeFormat));
+                    .ToString(_configuration.UtcTimeFormat));
             }
 
             return metadataResult;
