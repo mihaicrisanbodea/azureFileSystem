@@ -14,15 +14,8 @@ namespace AzureBlobFileSystem.Implementation
         {
             var folderInfoDictionary = new Dictionary<string, FolderInfo>();
 
-            foreach (var blobItem in blobItems)
+            foreach (var cloudBlob in blobItems.OfType<CloudBlob>())
             {
-                var cloudBlob = blobItem as CloudBlob;
-
-                if (cloudBlob == null)
-                {
-                    continue;
-                }
-
                 var blobPathChunks = GetPathChunks(cloudBlob.Name);
 
                 if (blobPathChunks.Length <= 1)
@@ -58,13 +51,7 @@ namespace AzureBlobFileSystem.Implementation
                 }
 
                 TryUpdateFolderCount(partialDirectoryPath, folderInfoDictionary);
-
                 folderInfoDictionary.Add(partialDirectoryPath, new FolderInfo { RelativePath = partialDirectoryPath.TrimEnd('/') });
-            }
-
-            if (string.IsNullOrWhiteSpace(partialDirectoryPath))
-            {
-                return;
             }
 
             sb.Append(pathChunks.Last());

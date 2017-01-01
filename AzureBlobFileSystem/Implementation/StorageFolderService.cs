@@ -11,15 +11,15 @@ namespace AzureBlobFileSystem.Implementation
     public class StorageFolderService : IStorageFolderService
     {
         private readonly IAzureStorageProvider _azureStorageProvider;
-        private readonly IStorageFileService _storageFileService;
-        private readonly IPathValidationService _pathValidationService;
         private readonly IConfiguration _configuration;
         private readonly IFolderInfoService _folderInfoService;
+        private readonly IPathValidationService _pathValidationService;
+        private readonly IStorageFileService _storageFileService;
 
-        public StorageFolderService(IAzureStorageProvider azureStorageProvider, 
-            IStorageFileService storageFileService, 
-            IPathValidationService pathValidationService, 
-            IConfiguration configuration, 
+        public StorageFolderService(IAzureStorageProvider azureStorageProvider,
+            IStorageFileService storageFileService,
+            IPathValidationService pathValidationService,
+            IConfiguration configuration,
             IFolderInfoService folderInfoService)
         {
             _azureStorageProvider = azureStorageProvider;
@@ -43,13 +43,9 @@ namespace AzureBlobFileSystem.Implementation
             _pathValidationService.ValidateNotRemovingRoot(path, keepSource);
 
             if (string.IsNullOrEmpty(path))
-            {
                 path = string.Empty;
-            }
             else
-            {
                 _pathValidationService.ValidateDirectoryExists(path);
-            }
 
             _pathValidationService.ValidateDirectoryDoesNotExist(newPath);
 
@@ -60,7 +56,7 @@ namespace AzureBlobFileSystem.Implementation
         {
             _pathValidationService.ValidateNotEmpty(path);
             _pathValidationService.ValidateDirectoryExists(path);
-            
+
             DeleteRecursively(path);
         }
 
@@ -69,25 +65,25 @@ namespace AzureBlobFileSystem.Implementation
             var container = _azureStorageProvider.GetContainer();
 
             BlobContinuationToken token = null;
-            Dictionary<string, FolderInfo> folderInfoItems = new Dictionary<string, FolderInfo>();
+            var folderInfoItems = new Dictionary<string, FolderInfo>();
 
             do
             {
                 var blobResultSegment = container.ListBlobsSegmented(prefix, true,
                     BlobListingDetails.None, _configuration.BlobListingPageSize, token, null, null);
                 token = blobResultSegment.ContinuationToken;
-                IEnumerable<IListBlobItem> blobsList = blobResultSegment.Results;
+                var blobsList = blobResultSegment.Results;
 
                 var folderInfoResult = _folderInfoService.Build(blobsList);
 
                 MergeDictionaries(folderInfoItems, folderInfoResult);
-
             } while (token != null);
 
             return folderInfoItems.Select(s => s.Value).ToList();
         }
 
-        private void MergeDictionaries(Dictionary<string, FolderInfo> dictionary1, Dictionary<string, FolderInfo> dictionary2)
+        private void MergeDictionaries(Dictionary<string, FolderInfo> dictionary1,
+            Dictionary<string, FolderInfo> dictionary2)
         {
             foreach (var kvp in dictionary2)
             {
@@ -157,11 +153,8 @@ namespace AzureBlobFileSystem.Implementation
 
                 var directory = blob as CloudBlobDirectory;
                 if (directory != null)
-                {
                     DeleteRecursively(GetPath(directory));
-                }
             }
         }
-
     }
 }

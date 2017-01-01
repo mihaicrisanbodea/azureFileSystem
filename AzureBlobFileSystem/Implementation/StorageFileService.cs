@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using AzureBlobFileSystem.Extensions;
@@ -17,16 +16,19 @@ namespace AzureBlobFileSystem.Implementation
         private readonly IPathValidationService _pathValidationService;
         private readonly IConfiguration _configuration;
         private readonly IFileInfoService _fileInfoService;
+        private readonly IBlobMetadataService _blobMetadataService;
 
         public StorageFileService(IAzureStorageProvider azureStorageProvider, 
             IPathValidationService pathValidationService, 
             IConfiguration configuration, 
-            IFileInfoService fileInfoService)
+            IFileInfoService fileInfoService, 
+            IBlobMetadataService blobMetadataService)
         {
             _azureStorageProvider = azureStorageProvider;
             _pathValidationService = pathValidationService;
             _configuration = configuration;
             _fileInfoService = fileInfoService;
+            _blobMetadataService = blobMetadataService;
         }
 
         public FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null)
@@ -54,15 +56,13 @@ namespace AzureBlobFileSystem.Implementation
 
             do
             {
-                var listingDetails = includeMetadata
-                    ? BlobListingDetails.Metadata
-                    : BlobListingDetails.None;
-
+                var listingDetails = GetListingDetails(includeMetadata);
                 var blobResultSegment = container.ListBlobsSegmented(prefix, true,
                     listingDetails, _configuration.BlobListingPageSize, token, null, null);
 
                 token = blobResultSegment.ContinuationToken;
-                IEnumerable<IListBlobItem> blobItems = blobResultSegment.Results;
+                var blobItems = blobResultSegment.Results;
+
                 var fileInfoList = _fileInfoService.Build(blobItems, includeMetadata);
                 fileInfoItems.AddRange(fileInfoList);
             } while (token != null);
@@ -107,6 +107,13 @@ namespace AzureBlobFileSystem.Implementation
             blob.Delete();
         }
 
+        private BlobListingDetails GetListingDetails(bool includeMetadata)
+        {
+            return includeMetadata
+                ? BlobListingDetails.Metadata
+                : BlobListingDetails.None;
+        }
+
         private void TrySetContentType(CloudBlob blob, string path)
         {
             var contentType = MimeMapping.GetMimeMapping(path);
@@ -124,28 +131,8 @@ namespace AzureBlobFileSystem.Implementation
             }
             else
             {
-                TrySetMetadata(blob, blobMetadata);
+                _blobMetadataService.TrySet(blob, blobMetadata);
                 blob.UploadFromStream(stream);
-            }
-        }
-
-        private void TrySetMetadata(CloudBlockBlob blob, BlobMetadata blobMetadata)
-        {
-            if (blobMetadata == null)
-            {
-                return;
-            }
-
-            var blobMeta = blobMetadata.Metadata.Where(m => !string.IsNullOrWhiteSpace(m.Value)).ToList();
-
-            if (!blobMeta.Any())
-            {
-                return;
-            }
-
-            foreach (var metadata in blobMeta)
-            {
-                blob.Metadata.Add(metadata.Key, metadata.Value);
             }
         }
     }

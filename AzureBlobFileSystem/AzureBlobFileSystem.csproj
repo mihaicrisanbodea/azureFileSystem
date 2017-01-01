@@ -70,6 +70,7 @@
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Implementation\AzureStorageProvider.cs" />
+    <Compile Include="Implementation\BlobMetadataService.cs" />
     <Compile Include="Implementation\Configuration.cs" />
     <Compile Include="Implementation\FileInfoService.cs" />
     <Compile Include="Implementation\FolderInfoService.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="Implementation\StorageFileService.cs" />
     <Compile Include="Implementation\StorageFolderService.cs" />
     <Compile Include="Interface\IAzureStorageProvider.cs" />
+    <Compile Include="Interface\IBlobMetadataService.cs" />
     <Compile Include="Interface\IConfiguration.cs" />
     <Compile Include="Interface\IFileInfoService.cs" />
     <Compile Include="Interface\IFolderInfoService.cs" />

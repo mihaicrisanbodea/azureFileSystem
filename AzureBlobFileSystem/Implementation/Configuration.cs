@@ -1,11 +1,12 @@
-﻿using AzureBlobFileSystem.Interface;
-using System.Configuration;
+﻿using System.Configuration;
+using AzureBlobFileSystem.Interface;
 
 namespace AzureBlobFileSystem.Implementation
 {
     public class Configuration : IConfiguration
     {
-        public string StorageAccountConnectionString => ConfigurationManager.AppSettings["StorageAccountConnectionString"];
+        public string StorageAccountConnectionString
+            => ConfigurationManager.AppSettings["StorageAccountConnectionString"];
 
         public string ContainerName => ConfigurationManager.AppSettings["ContainerName"];
 
