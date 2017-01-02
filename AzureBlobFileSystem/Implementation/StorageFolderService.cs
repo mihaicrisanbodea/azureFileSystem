@@ -31,8 +31,10 @@ namespace AzureBlobFileSystem.Implementation
 
         public void Create(string path)
         {
+            _pathValidationService.ValidateNotEmpty(path);
+
             var container = _azureStorageProvider.GetContainer();
-            path = container.EnsureDirectoryDoesNotExist(path).TrimEnd('/');
+            path = container.EnsureDirectoryDoesNotExist(path);
             path = $"{path}/{_configuration.DefaultFileName}";
 
             _storageFileService.Create(path);
@@ -43,9 +45,13 @@ namespace AzureBlobFileSystem.Implementation
             _pathValidationService.ValidateNotRemovingRoot(path, keepSource);
 
             if (string.IsNullOrEmpty(path))
+            {
                 path = string.Empty;
+            }
             else
+            {
                 _pathValidationService.ValidateDirectoryExists(path);
+            }
 
             _pathValidationService.ValidateDirectoryDoesNotExist(newPath);
 
@@ -111,7 +117,6 @@ namespace AzureBlobFileSystem.Implementation
             return cloudBlobDirectory.Prefix.TrimEnd('/');
         }
 
-
         private async Task CopyRecursively(string path, string newPath, bool keepSource)
         {
             var container = _azureStorageProvider.GetContainer();
@@ -153,7 +158,9 @@ namespace AzureBlobFileSystem.Implementation
 
                 var directory = blob as CloudBlobDirectory;
                 if (directory != null)
+                {
                     DeleteRecursively(GetPath(directory));
+                }
             }
         }
     }

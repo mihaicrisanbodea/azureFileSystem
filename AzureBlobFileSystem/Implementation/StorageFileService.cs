@@ -33,7 +33,8 @@ namespace AzureBlobFileSystem.Implementation
 
         public FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null)
         {
-            var container = _azureStorageProvider.GetContainer();
+            _pathValidationService.ValidateNotEmpty(path);
+            CloudBlobContainer container = _azureStorageProvider.GetContainer();
             path = container.EnsureFileDoesNotExist(path);
 
             var blob = container.GetBlockBlobReference(path);
@@ -52,7 +53,7 @@ namespace AzureBlobFileSystem.Implementation
             var container = _azureStorageProvider.GetContainer();
 
             BlobContinuationToken token = null;
-            List<FileInfo> fileInfoItems = new List<FileInfo>();
+            var fileInfoItems = new List<FileInfo>();
 
             do
             {

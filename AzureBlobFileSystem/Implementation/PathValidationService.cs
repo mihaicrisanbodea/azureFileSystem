@@ -56,7 +56,7 @@ namespace AzureBlobFileSystem.Implementation
 
         public void ValidateNotEmpty(string path)
         {
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 throw new ArgumentException("Path can't be empty");
             }
@@ -64,7 +64,7 @@ namespace AzureBlobFileSystem.Implementation
 
         public void ValidateNotRemovingRoot(string path, bool keepSource)
         {
-            if (string.IsNullOrEmpty(path) && !keepSource)
+            if (string.IsNullOrWhiteSpace(path) && !keepSource)
             {
                 throw new ArgumentException("Removing root not supported");
             }

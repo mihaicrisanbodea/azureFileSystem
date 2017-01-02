@@ -11,25 +11,14 @@ namespace AzureBlobFileSystem.Extensions
 
         public static string EnsureDirectoryDoesNotExist(this CloudBlobContainer container, string path)
         {
-            var endsWithSlash = path.EndsWith("/");
-            var iterationCount = 0;
+            var tempPath = path.TrimEnd('/');
 
-            while (DirectoryExists(container, path))
+            while (DirectoryExists(container, tempPath))
             {
-                if (iterationCount == 0 && !endsWithSlash)
-                {
-                    path = $"{path}{DuplicateExtension}";
-                }
-                else
-                {
-                    path = path.Substring(0, path.Length - 2);
-                    path = $"{path}{DuplicateExtension}";
-                }
-
-                iterationCount++;
+                tempPath = $"{tempPath}{DuplicateExtension}";
             }
 
-            return path;
+            return tempPath;
         }
 
         public static string EnsureFileDoesNotExist(this CloudBlobContainer container, string path)
