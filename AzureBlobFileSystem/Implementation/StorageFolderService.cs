@@ -53,8 +53,6 @@ namespace AzureBlobFileSystem.Implementation
                 _pathValidationService.ValidateDirectoryExists(path);
             }
 
-            _pathValidationService.ValidateDirectoryDoesNotExist(newPath);
-
             await CopyRecursively(path, newPath, keepSource);
         }
 

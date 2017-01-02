@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -23,9 +22,9 @@ namespace AzureBlobFileSystem.Extensions
 
         public static string EnsureFileDoesNotExist(this CloudBlobContainer container, string path)
         {
-            var fileName = Path.GetFileNameWithoutExtension(path);
-            var extension = Path.GetExtension(path);
-            var rootPath = Path.GetDirectoryName(path);
+            var fileName = path.GetFileNameWithoutExtension();
+            var extension = path.GetExtension();
+            var rootPath = path.GetDirectoryName();
 
             while (FileExists(container, path))
             {

@@ -29,6 +29,69 @@ namespace AzureBlobFileSystem.Extensions
             return $"{newValue}/{suffix}";
         }
 
+        public static string GetDirectoryName(this string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("Path cannot be null");
+            }
+
+            var lastSlashIndex = path.LastIndexOf('/');
+            if (lastSlashIndex == -1)
+            {
+                throw new ArgumentException($"Path invalid {path}");
+            }
+            return path.Substring(0, lastSlashIndex);
+        }
+
+        public static string GetExtension(this string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("Path cannot be null");
+            }
+
+            var lastDotIndex = path.LastIndexOf('.');
+            if (lastDotIndex == -1)
+            {
+                throw new ArgumentException($"Path has no extension: {path}");
+            }
+            return path.Substring(lastDotIndex);
+        }
+
+        public static string GetFileName(this string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("Path cannot be null");
+            }
+
+            var lastSlashIndex = path.LastIndexOf('/');
+            if (lastSlashIndex == -1)
+            {
+                throw new ArgumentException($"Path invalid: {path}");
+            }
+
+            return path.Substring(lastSlashIndex + 1);
+        }
+
+        public static string GetFileNameWithoutExtension(this string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("Path cannot be null");
+            }
+
+            var lastDotIndex = path.LastIndexOf('.');
+            var lastSlashIndex = path.LastIndexOf('/');
+            if (lastSlashIndex == -1 || lastDotIndex == -1 || lastDotIndex < lastSlashIndex)
+            {
+                throw new ArgumentException($"Path invalid: {path}");
+            }
+
+            return path.Substring(lastSlashIndex + 1, path.Length - lastDotIndex);
+        }
+
         private static void ValidateString(string value, string valueName)
         {
             if (value == null)

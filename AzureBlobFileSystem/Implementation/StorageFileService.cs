@@ -80,9 +80,8 @@ namespace AzureBlobFileSystem.Implementation
         public async Task Copy(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource)
         {
             _pathValidationService.ValidateFileExists(sourcePath, container);
-            _pathValidationService.ValidateFileDoesNotExist(destinationPath, container);
-
             destinationPath = container.EnsureFileDoesNotExist(destinationPath);
+
             var source = container.GetBlockBlobReference(sourcePath);
             var target = container.GetBlockBlobReference(destinationPath);
 
