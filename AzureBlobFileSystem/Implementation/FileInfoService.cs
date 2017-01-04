@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using AzureBlobFileSystem.Interface;
+using AzureBlobFileSystem.Contract;
 using AzureBlobFileSystem.Model;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -24,7 +24,7 @@ namespace AzureBlobFileSystem.Implementation
         {
             return new FileInfo
             {
-                Metadata = includeMetadata ? _blobMetadataService.Get(blob) : null,
+                Metadata = includeMetadata ? _blobMetadataService.List(blob) : null,
                 RelativePath = blob.Name
             };
         }

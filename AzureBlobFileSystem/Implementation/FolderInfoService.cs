@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AzureBlobFileSystem.Interface;
+using AzureBlobFileSystem.Contract;
 using AzureBlobFileSystem.Model;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -29,12 +29,12 @@ namespace AzureBlobFileSystem.Implementation
             return folderInfoDictionary;
         }
 
-        private string[] GetPathChunks(string blobName)
+        private static string[] GetPathChunks(string blobName)
         {
             return blobName.Split(new[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        private void BuildFolderInfo(string[] pathChunks, Dictionary<string, FolderInfo> folderInfoDictionary)
+        private static void BuildFolderInfo(string[] pathChunks, Dictionary<string, FolderInfo> folderInfoDictionary)
         {
             var sb = new StringBuilder();
             var partialDirectoryPath = string.Empty;
@@ -59,7 +59,7 @@ namespace AzureBlobFileSystem.Implementation
             folderInfoDictionary[partialDirectoryPath].FileRelativePaths.Add(sb.ToString());
         }
 
-        private void TryUpdateFolderCount(string directoryPath, Dictionary<string, FolderInfo> folderInfoDictionary)
+        private static void TryUpdateFolderCount(string directoryPath, Dictionary<string, FolderInfo> folderInfoDictionary)
         {
             var cleanPath = directoryPath.TrimEnd('/');
             var lastIndex = cleanPath.LastIndexOf('/') + 1;

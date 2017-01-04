@@ -1,9 +1,9 @@
 ﻿using System.Configuration;
-using AzureBlobFileSystem.Interface;
+using AzureBlobFileSystem.Contract;
 
 namespace AzureBlobFileSystem.Implementation
 {
-    public class Configuration : IConfiguration
+    public class ConfigurationService : IConfigurationService
     {
         public string StorageAccountConnectionString
             => ConfigurationManager.AppSettings["StorageAccountConnectionString"];

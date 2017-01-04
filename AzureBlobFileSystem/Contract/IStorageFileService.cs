@@ -5,7 +5,7 @@ using AzureBlobFileSystem.Model;
 using Microsoft.WindowsAzure.Storage.Blob;
 using FileInfo = AzureBlobFileSystem.Model.FileInfo;
 
-namespace AzureBlobFileSystem.Interface
+namespace AzureBlobFileSystem.Contract
 {
     public interface IStorageFileService
     {

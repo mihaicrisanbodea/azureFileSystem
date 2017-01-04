@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using AzureBlobFileSystem.Model;
 
-namespace AzureBlobFileSystem.Interface
+namespace AzureBlobFileSystem.Contract
 {
     public interface IStorageFolderService
     {

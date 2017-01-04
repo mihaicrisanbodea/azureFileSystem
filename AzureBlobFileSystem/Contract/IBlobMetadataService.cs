@@ -1,11 +1,11 @@
 ﻿using AzureBlobFileSystem.Model;
 using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace AzureBlobFileSystem.Interface
+namespace AzureBlobFileSystem.Contract
 {
     public interface IBlobMetadataService
     {
-        BlobMetadata Get(CloudBlob blob);
+        BlobMetadata List(CloudBlob blob);
         bool TrySet(CloudBlockBlob blob, BlobMetadata blobMetadata);
     }
 }

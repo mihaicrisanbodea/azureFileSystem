@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using AzureBlobFileSystem.Interface;
+using AzureBlobFileSystem.Contract;
 using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace AzureBlobFileSystem.Implementation
@@ -42,7 +42,7 @@ namespace AzureBlobFileSystem.Implementation
 
         public void ValidateFileExists(string path)
         {
-            var container = _azureStorageProvider.GetContainer();
+            var container = _azureStorageProvider.Container;
             ValidateFileExists(path, container);
         }
 
@@ -72,7 +72,7 @@ namespace AzureBlobFileSystem.Implementation
 
         private bool DirectoryExists(string path)
         {
-            var container = _azureStorageProvider.GetContainer();
+            var container = _azureStorageProvider.Container;
             return container.GetDirectoryReference(path).ListBlobs().Any();
         }
     }

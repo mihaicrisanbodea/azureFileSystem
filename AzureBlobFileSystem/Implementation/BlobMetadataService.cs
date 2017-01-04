@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using AzureBlobFileSystem.Interface;
+using AzureBlobFileSystem.Contract;
 using AzureBlobFileSystem.Model;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -7,14 +7,14 @@ namespace AzureBlobFileSystem.Implementation
 {
     public class BlobMetadataService : IBlobMetadataService
     {
-        private readonly IConfiguration _configuration;
+        private readonly IConfigurationService _configurationService;
 
-        public BlobMetadataService(IConfiguration configuration)
+        public BlobMetadataService(IConfigurationService configurationService)
         {
-            _configuration = configuration;
+            _configurationService = configurationService;
         }
 
-        public BlobMetadata Get(CloudBlob blob)
+        public BlobMetadata List(CloudBlob blob)
         {
             var metadataResult = new BlobMetadata();
 
@@ -29,7 +29,7 @@ namespace AzureBlobFileSystem.Implementation
             if (lastModifiedDate != null)
             {
                 metadataResult.Add("modified", lastModifiedDate.Value.DateTime.ToUniversalTime()
-                    .ToString(_configuration.UtcTimeFormat));
+                    .ToString(_configurationService.UtcTimeFormat));
             }
 
             return metadataResult;

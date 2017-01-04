@@ -1,6 +1,6 @@
-﻿namespace AzureBlobFileSystem.Interface
+﻿namespace AzureBlobFileSystem.Contract
 {
-    public interface IConfiguration
+    public interface IConfigurationService
     {
         string StorageAccountConnectionString { get; }
 

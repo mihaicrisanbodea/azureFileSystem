@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Web;
+using AzureBlobFileSystem.Contract;
 using AzureBlobFileSystem.Extensions;
-using AzureBlobFileSystem.Interface;
 using AzureBlobFileSystem.Model;
 using Microsoft.WindowsAzure.Storage.Blob;
 using FileInfo = AzureBlobFileSystem.Model.FileInfo;
@@ -14,19 +14,19 @@ namespace AzureBlobFileSystem.Implementation
     {
         private readonly IAzureStorageProvider _azureStorageProvider;
         private readonly IPathValidationService _pathValidationService;
-        private readonly IConfiguration _configuration;
+        private readonly IConfigurationService _configurationService;
         private readonly IFileInfoService _fileInfoService;
         private readonly IBlobMetadataService _blobMetadataService;
 
         public StorageFileService(IAzureStorageProvider azureStorageProvider, 
             IPathValidationService pathValidationService, 
-            IConfiguration configuration, 
+            IConfigurationService configurationService, 
             IFileInfoService fileInfoService, 
             IBlobMetadataService blobMetadataService)
         {
             _azureStorageProvider = azureStorageProvider;
             _pathValidationService = pathValidationService;
-            _configuration = configuration;
+            _configurationService = configurationService;
             _fileInfoService = fileInfoService;
             _blobMetadataService = blobMetadataService;
         }
@@ -34,7 +34,7 @@ namespace AzureBlobFileSystem.Implementation
         public FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null)
         {
             _pathValidationService.ValidateNotEmpty(path);
-            CloudBlobContainer container = _azureStorageProvider.GetContainer();
+            CloudBlobContainer container = _azureStorageProvider.Container;
             path = container.EnsureFileDoesNotExist(path);
 
             var blob = container.GetBlockBlobReference(path);
@@ -50,7 +50,7 @@ namespace AzureBlobFileSystem.Implementation
 
         public List<FileInfo> List(string prefix, bool includeMetadata = false)
         {
-            var container = _azureStorageProvider.GetContainer();
+            var container = _azureStorageProvider.Container;
 
             BlobContinuationToken token = null;
             var fileInfoItems = new List<FileInfo>();
@@ -59,7 +59,7 @@ namespace AzureBlobFileSystem.Implementation
             {
                 var listingDetails = GetListingDetails(includeMetadata);
                 var blobResultSegment = container.ListBlobsSegmented(prefix, true,
-                    listingDetails, _configuration.BlobListingPageSize, token, null, null);
+                    listingDetails, _configurationService.BlobListingPageSize, token, null, null);
 
                 token = blobResultSegment.ContinuationToken;
                 var blobItems = blobResultSegment.Results;
@@ -73,7 +73,7 @@ namespace AzureBlobFileSystem.Implementation
         
         public async Task Copy(string path, string newPath, bool keepSource = true)
         {
-            var container = _azureStorageProvider.GetContainer();
+            var container = _azureStorageProvider.Container;
             await Copy(container, path, newPath, keepSource);
         }
 
@@ -96,7 +96,7 @@ namespace AzureBlobFileSystem.Implementation
         public void Delete(string path)
         {
             _pathValidationService.ValidateFileExists(path);
-            var container = _azureStorageProvider.GetContainer();
+            var container = _azureStorageProvider.Container;
 
             if (!container.FileExists(path))
             {
@@ -107,14 +107,14 @@ namespace AzureBlobFileSystem.Implementation
             blob.Delete();
         }
 
-        private BlobListingDetails GetListingDetails(bool includeMetadata)
+        private static BlobListingDetails GetListingDetails(bool includeMetadata)
         {
             return includeMetadata
                 ? BlobListingDetails.Metadata
                 : BlobListingDetails.None;
         }
 
-        private void TrySetContentType(CloudBlob blob, string path)
+        private static void TrySetContentType(CloudBlob blob, string path)
         {
             var contentType = MimeMapping.GetMimeMapping(path);
             if (!string.IsNullOrWhiteSpace(contentType))
