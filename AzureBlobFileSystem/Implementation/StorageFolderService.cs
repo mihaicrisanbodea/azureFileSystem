@@ -40,20 +40,20 @@ namespace AzureBlobFileSystem.Implementation
             _storageFileService.Create(path);
         }
 
-        public async Task Copy(string path, string newPath, bool keepSource = true)
+        public async Task Copy(string sourcePath, string destinationPath, bool keepSource = true)
         {
-            _pathValidationService.ValidateNotRemovingRoot(path, keepSource);
+            _pathValidationService.ValidateNotRemovingRoot(sourcePath, keepSource);
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(sourcePath))
             {
-                path = string.Empty;
+                sourcePath = string.Empty;
             }
             else
             {
-                _pathValidationService.ValidateDirectoryExists(path);
+                _pathValidationService.ValidateDirectoryExists(sourcePath);
             }
 
-            await CopyRecursively(path, newPath, keepSource);
+            await CopyRecursively(sourcePath, destinationPath, keepSource);
         }
 
         public void Delete(string path)
@@ -115,17 +115,17 @@ namespace AzureBlobFileSystem.Implementation
             return cloudBlobDirectory.Prefix.TrimEnd('/');
         }
 
-        private async Task CopyRecursively(string path, string newPath, bool keepSource)
+        private async Task CopyRecursively(string sourcePath, string destinationPath, bool keepSource)
         {
             var container = _azureStorageProvider.Container;
 
-            foreach (var blob in container.GetDirectoryReference(path).ListBlobs())
+            foreach (var blob in container.GetDirectoryReference(sourcePath).ListBlobs())
             {
                 var blockBlob = blob as CloudBlockBlob;
                 if (blockBlob != null)
                 {
                     var fileName = blockBlob.Name;
-                    var newFileName = fileName.ReplaceFirstOccurrence(path, newPath);
+                    var newFileName = fileName.ReplaceFirstOccurrence(sourcePath, destinationPath);
                     await _storageFileService.Copy(container, fileName, newFileName, keepSource);
                     continue;
                 }
@@ -135,8 +135,8 @@ namespace AzureBlobFileSystem.Implementation
                 if (blobDirectory != null)
                 {
                     var folderPath = GetPath(blobDirectory);
-                    var newFolderPathSuffix = folderPath.ReplaceFirstOccurrence(path, string.Empty);
-                    await CopyRecursively(folderPath, $"{newPath}{newFolderPathSuffix}", keepSource);
+                    var newFolderPathSuffix = folderPath.ReplaceFirstOccurrence(sourcePath, string.Empty);
+                    await CopyRecursively(folderPath, $"{destinationPath}{newFolderPathSuffix}", keepSource);
                 }
             }
         }

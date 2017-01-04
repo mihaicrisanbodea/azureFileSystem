@@ -71,10 +71,10 @@ namespace AzureBlobFileSystem.Implementation
             return fileInfoItems;
         }
         
-        public async Task Copy(string path, string newPath, bool keepSource = true)
+        public async Task Copy(string sourcePath, string destinationPath, bool keepSource = true)
         {
             var container = _azureStorageProvider.Container;
-            await Copy(container, path, newPath, keepSource);
+            await Copy(container, sourcePath, destinationPath, keepSource);
         }
 
         public async Task Copy(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource)
