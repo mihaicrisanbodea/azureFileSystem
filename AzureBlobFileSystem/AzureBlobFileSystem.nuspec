@@ -17,4 +17,8 @@
       <dependency id="WindowsAzure.Storage" version="7.2.1" />
     </dependencies>
   </metadata>
+  <files>
+    <file src="Content\app.config.install.xdt" target="content" />
+    <file src="Content\web.config.install.xdt" target="content" />
+  </files>
 </package>
