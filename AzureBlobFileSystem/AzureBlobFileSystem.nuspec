@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>AzureBlob.FileSystem</id>
-    <version>1.0.0.0</version>
+    <version>1.0.1</version>
     <authors>Mihai Crisan-Bodea</authors>
     <owners>Mihai Crisan-Bodea</owners>
     <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
@@ -10,7 +10,7 @@
     <iconUrl>https://github.com/mihaicrisanbodea/azureFileSystem/blob/master/folder-icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Functionality for replicating file system onto Microsoft Azure blob storage</description>
-    <releaseNotes>First version of azure blob file system</releaseNotes>
+    <releaseNotes>Added xml documentation and fixed .config imports</releaseNotes>
     <copyright>Copyright ©2017</copyright>
     <tags>blob filesystem AzureBlob blobfilesystem</tags>
     <dependencies>

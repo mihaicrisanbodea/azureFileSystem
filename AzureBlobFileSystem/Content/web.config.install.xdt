@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
-    <appSettings xdt:Transform="Insert">
-	 <add key="StorageAccountConnectionString" value="DefaultEndpointsProtocol=https;AccountName=^Storage Account^;AccountKey=^Storage Key^;BlobEndpoint=https://^Storage Account^.blob.core.windows.net/;TableEndpoint=https://^Storage Account^.table.core.windows.net/;QueueEndpoint=https://^Storage Account^.queue.core.windows.net/;FileEndpoint=https://^Storage Account^.file.core.windows.net/" />
-     <add key="ContainerName" value="^Container Name^" />
-     <add key="DefaultFileName" value="temp.tmp"/>
-     <add key="UtcTimeFormat" value="yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'" />
-     <add key="BlobListingPageSize" value="500" />
+    <appSettings>
+	 <add key="StorageAccountConnectionString" value="DefaultEndpointsProtocol=https;AccountName=^Storage Account^;AccountKey=^Storage Key^;BlobEndpoint=https://^Storage Account^.blob.core.windows.net/;TableEndpoint=https://^Storage Account^.table.core.windows.net/;QueueEndpoint=https://^Storage Account^.queue.core.windows.net/;FileEndpoint=https://^Storage Account^.file.core.windows.net/" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="ContainerName" value="^Container Name^" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="DefaultFileName" value="temp.tmp" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="UtcTimeFormat" value="yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="BlobListingPageSize" value="500" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
     </appSettings>
 </configuration>
