@@ -6,13 +6,14 @@ namespace AzureBlobFileSystem.Implementation
     public class ConfigurationService : IConfigurationService
     {
         private const int DefaultBlobListingPageSize = 500;
+        private const int MaxBlobListingPageSize = 5000;
 
         public string StorageAccountConnectionString
-            => ConfigurationManager.AppSettings["StorageAccountConnectionString"];
+            => ConfigurationManager.AppSettings["AbFsStorageAccountConnectionString"];
 
-        public string ContainerName => ConfigurationManager.AppSettings["ContainerName"];
+        public string ContainerName => ConfigurationManager.AppSettings["AbFsContainerName"];
 
-        public string DefaultFileName => ConfigurationManager.AppSettings["DefaultFileName"];
+        public string DefaultFileName => ConfigurationManager.AppSettings["AbFsDefaultFileName"];
 
         public string UtcTimeFormat => ConfigurationManager.AppSettings["UtcTimeFormat"];
 
@@ -24,7 +25,7 @@ namespace AzureBlobFileSystem.Implementation
             int pageSize;
             if (int.TryParse(pageSizeString, out pageSize))
             {
-                return pageSize;
+                return pageSize > MaxBlobListingPageSize ? MaxBlobListingPageSize : pageSize;
             }
 
             return DefaultBlobListingPageSize;

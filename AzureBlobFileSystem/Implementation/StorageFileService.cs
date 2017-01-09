@@ -50,34 +50,17 @@ namespace AzureBlobFileSystem.Implementation
 
         public List<FileInfo> List(string prefix, bool includeMetadata = false)
         {
-            var container = _azureStorageProvider.Container;
-
-            BlobContinuationToken token = null;
-            var fileInfoItems = new List<FileInfo>();
-
-            do
-            {
-                var listingDetails = GetListingDetails(includeMetadata);
-                var blobResultSegment = container.ListBlobsSegmented(prefix, true,
-                    listingDetails, _configurationService.BlobListingPageSize, token, null, null);
-
-                token = blobResultSegment.ContinuationToken;
-                var blobItems = blobResultSegment.Results;
-
-                var fileInfoList = _fileInfoService.Build(blobItems, includeMetadata);
-                fileInfoItems.AddRange(fileInfoList);
-            } while (token != null);
-
-            return fileInfoItems;
+            var blobItems = ListBlobsAsync(prefix, includeMetadata).Result;
+            return _fileInfoService.Build(blobItems, includeMetadata);
         }
         
-        public async Task Copy(string sourcePath, string destinationPath, bool keepSource = true)
+        public async Task CopyAsync(string sourcePath, string destinationPath, bool keepSource = true)
         {
             var container = _azureStorageProvider.Container;
-            await Copy(container, sourcePath, destinationPath, keepSource);
+            await CopyAsync(container, sourcePath, destinationPath, keepSource);
         }
 
-        public async Task Copy(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource)
+        public async Task CopyAsync(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource)
         {
             _pathValidationService.ValidateFileExists(sourcePath, container);
             destinationPath = container.EnsureFileDoesNotExist(destinationPath);
@@ -105,6 +88,24 @@ namespace AzureBlobFileSystem.Implementation
 
             var blob = container.GetBlockBlobReference(path);
             blob.Delete();
+        }
+
+        private async Task<List<IListBlobItem>> ListBlobsAsync(string prefix, bool includeMetadata)
+        {
+            var container = _azureStorageProvider.Container;
+            var results = new List<IListBlobItem>();
+            BlobContinuationToken token = null;
+
+            do
+            {
+                var listingDetails = GetListingDetails(includeMetadata);
+                var blobResultSegment = await container.ListBlobsSegmentedAsync(prefix, true,
+                    listingDetails, _configurationService.BlobListingPageSize, token, null, null);
+                token = blobResultSegment.ContinuationToken;
+                results.AddRange(blobResultSegment.Results);
+            } while (token != null);
+
+            return results;
         }
 
         private static BlobListingDetails GetListingDetails(bool includeMetadata)

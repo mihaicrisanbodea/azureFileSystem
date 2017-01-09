@@ -15,7 +15,7 @@ namespace AzureBlobFileSystem.Contract
         /// it adds an empty file aswell.
         /// </summary>
         /// <param name="path">
-        /// The path relative to the container at which the folder will be 
+        /// The path relative to the container at which the folder will be created
         /// (including the name of the folder).
         /// </param>
         void Create(string path);
@@ -33,7 +33,7 @@ namespace AzureBlobFileSystem.Contract
         List<FolderInfo> List(string prefix);
 
         /// <summary>
-        /// Copy the files and folders from a path to another.
+        /// Copy the files and folders from a source content.
         /// It can be also used as a 'MOVE' operation by changing the 
         /// optional 'keepSource' parameter.
         /// Asynchronous operation.
@@ -42,8 +42,7 @@ namespace AzureBlobFileSystem.Contract
         /// Source path (copy files from)
         /// </param>
         /// <param name="destinationPath">
-        /// Destination path (copy files to). This should also contain the source
-        /// folder name if this needs to be copied.
+        /// Destination path (copy files to). Root directory to copy files.
         /// </param>
         /// <param name="keepSource">
         /// Optional parameter specifying whether the source should be deleted or not.
@@ -51,7 +50,7 @@ namespace AzureBlobFileSystem.Contract
         /// FALSE = delete source
         /// </param>
         /// <returns></returns>
-        Task Copy(string sourcePath, string destinationPath, bool keepSource = true);
+        Task CopyAsync(string sourcePath, string destinationPath, bool keepSource = true);
 
         /// <summary>
         /// Delete the files and folders from a specific path.

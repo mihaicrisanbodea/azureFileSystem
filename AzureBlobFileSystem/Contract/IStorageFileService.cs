@@ -16,7 +16,7 @@ namespace AzureBlobFileSystem.Contract
         /// Create a file at the given path and (optionally) add metadata to it.
         /// </summary>
         /// <param name="path">
-        /// The path for the file to be created (including the name of the file).
+        /// The path at which the file will be created (including the name of the file).
         /// </param>
         /// <param name="blobMetadata">
         /// The metadata (optional) for the file. It consists of a string-string key-value pair,
@@ -63,7 +63,7 @@ namespace AzureBlobFileSystem.Contract
         /// FALSE = delete source
         /// </param>
         /// <returns> </returns>
-        Task Copy(string sourcePath, string destinationPath, bool keepSource = true);
+        Task CopyAsync(string sourcePath, string destinationPath, bool keepSource = true);
 
         /// <summary>
         /// Copy the file from a path to another.
@@ -86,7 +86,7 @@ namespace AzureBlobFileSystem.Contract
         /// FALSE = delete source
         /// </param>
         /// <returns></returns>
-        Task Copy(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource);
+        Task CopyAsync(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource);
 
         /// <summary>
         /// Delete the file from the specified path.

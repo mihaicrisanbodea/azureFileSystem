@@ -40,7 +40,7 @@ namespace AzureBlobFileSystem.Implementation
             _storageFileService.Create(path);
         }
 
-        public async Task Copy(string sourcePath, string destinationPath, bool keepSource = true)
+        public async Task CopyAsync(string sourcePath, string destinationPath, bool keepSource = true)
         {
             _pathValidationService.ValidateNotRemovingRoot(sourcePath, keepSource);
 
@@ -66,48 +66,29 @@ namespace AzureBlobFileSystem.Implementation
 
         public List<FolderInfo> List(string prefix)
         {
-            var container = _azureStorageProvider.Container;
-
             BlobContinuationToken token = null;
-            var folderInfoItems = new Dictionary<string, FolderInfo>();
+            var blobItems = ListBlobsAsync(prefix).Result;
 
-            do
-            {
-                var blobResultSegment = container.ListBlobsSegmented(prefix, true,
-                    BlobListingDetails.None, _configurationService.BlobListingPageSize, token, null, null);
-                token = blobResultSegment.ContinuationToken;
-                var blobsList = blobResultSegment.Results;
-
-                var folderInfoResult = _folderInfoService.Build(blobsList);
-
-                MergeDictionaries(folderInfoItems, folderInfoResult);
-            } while (token != null);
-
+            var folderInfoItems = _folderInfoService.Build(blobItems);
             return folderInfoItems.Select(s => s.Value).ToList();
         }
 
-        private static void MergeDictionaries(Dictionary<string, FolderInfo> dictionary1,
-            Dictionary<string, FolderInfo> dictionary2)
+        private async Task<List<IListBlobItem>> ListBlobsAsync(string prefix)
         {
-            foreach (var kvp in dictionary2)
-            {
-                FolderInfo folderInfo;
-                var key = kvp.Key;
-                var value = kvp.Value;
-                var keyAlreadyProcessed = dictionary1.TryGetValue(key, out folderInfo);
+            var container = _azureStorageProvider.Container;
+            var results = new List<IListBlobItem>();
+            BlobContinuationToken token = null;
 
-                if (keyAlreadyProcessed)
-                {
-                    folderInfo.FileCount += value.FileCount;
-                    folderInfo.FolderCount += value.FolderCount;
-                    folderInfo.FileRelativePaths.AddRange(value.FileRelativePaths);
-                    folderInfo.FolderRelativePaths.AddRange(value.FolderRelativePaths);
-                }
-                else
-                {
-                    dictionary1.Add(key, value);
-                }
-            }
+            do
+            {
+                var blobResultSegment = await container.ListBlobsSegmentedAsync(prefix, 
+                    true, BlobListingDetails.None, _configurationService.BlobListingPageSize,
+                    token, null, null);
+                token = blobResultSegment.ContinuationToken;
+                results.AddRange(blobResultSegment.Results);
+            } while (token != null);
+
+            return results;
         }
 
         private static string GetPath(CloudBlobDirectory cloudBlobDirectory)
@@ -126,7 +107,7 @@ namespace AzureBlobFileSystem.Implementation
                 {
                     var fileName = blockBlob.Name;
                     var newFileName = fileName.ReplaceFirstOccurrence(sourcePath, destinationPath);
-                    await _storageFileService.Copy(container, fileName, newFileName, keepSource);
+                    await _storageFileService.CopyAsync(container, fileName, newFileName, keepSource);
                     continue;
                 }
 
