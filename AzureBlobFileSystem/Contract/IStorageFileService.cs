@@ -37,13 +37,17 @@ namespace AzureBlobFileSystem.Contract
         /// <param name="prefix">
         /// The starting path for the files to list the information for.
         /// </param>
+        /// <param name="firstLevelOnly">
+        /// Optional parameter specifying if only child files should be returned.
+        /// The default behavior is listing the entire tree.
+        /// </param>
         /// <param name="includeMetadata">
-        /// Optional parameter specifying whether the metadata should be included.
+        /// Optional parameter specifying if the metadata should be included.
         /// </param>
         /// <returns>
         /// The list with the file information(s) for the given path.
         /// </returns>
-        List<FileInfo> List(string prefix, bool includeMetadata = false);
+        List<FileInfo> List(string prefix, bool firstLevelOnly = false ,bool includeMetadata = false);
 
         /// <summary>
         /// Copy the file from a path to another.

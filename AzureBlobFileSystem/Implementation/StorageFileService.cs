@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using AzureBlobFileSystem.Contract;
@@ -48,9 +50,13 @@ namespace AzureBlobFileSystem.Implementation
             };
         }
 
-        public List<FileInfo> List(string prefix, bool includeMetadata = false)
+        public List<FileInfo> List(string prefix, bool firstLevelOnly = false, bool includeMetadata = false)
         {
             var blobItems = ListBlobsAsync(prefix, includeMetadata).Result;
+            if (firstLevelOnly)
+            {
+                blobItems = FilterListChildBlobItems(prefix, blobItems).ToList();
+            }
             return _fileInfoService.Build(blobItems, includeMetadata);
         }
         
@@ -113,6 +119,27 @@ namespace AzureBlobFileSystem.Implementation
             return includeMetadata
                 ? BlobListingDetails.Metadata
                 : BlobListingDetails.None;
+        }
+
+        private IEnumerable<IListBlobItem> FilterListChildBlobItems(string prefix, List<IListBlobItem> blobItems)
+        {
+            prefix = $"{prefix}/";
+
+            foreach (var blobItem in blobItems)
+            {
+                var cloudBlockBlob = blobItem as CloudBlockBlob;
+
+                if (cloudBlockBlob == null)
+                {
+                    continue;
+                }
+
+                var temp = cloudBlockBlob.Name.Replace(prefix, string.Empty);
+                if (temp.IndexOf("/", StringComparison.Ordinal) == -1)
+                {
+                    yield return blobItem;
+                }
+            }
         }
 
         private static void TrySetContentType(CloudBlob blob, string path)
