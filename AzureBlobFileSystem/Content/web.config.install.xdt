@@ -4,7 +4,19 @@
 	 <add key="AbFsStorageAccountConnectionString" value="DefaultEndpointsProtocol=https;AccountName=^Storage Account^;AccountKey=^Storage Key^;BlobEndpoint=https://^Storage Account^.blob.core.windows.net/;TableEndpoint=https://^Storage Account^.table.core.windows.net/;QueueEndpoint=https://^Storage Account^.queue.core.windows.net/;FileEndpoint=https://^Storage Account^.file.core.windows.net/" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
      <add key="AbFsContainerName" value="^Container Name^" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
      <add key="AbFsDefaultFileName" value="temp.tmp" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
-     <add key="UtcTimeFormat" value="yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
-     <add key="BlobListingPageSize" value="500" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsUtcTimeFormat" value="yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsBlobListingPageSize" value="500" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsOAuthLoginUrl" value="https://login.microsoftonline.com/{0}/oauth2/token" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureTenantId" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureUserId" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureUserKey" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureResourceUrl" value="https://management.core.windows.net/" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureGrantType" value="client_credentials" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureCdnUrl" value="https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Cdn/profiles/{2}/endpoints/{3}/{4}?api-version={5}" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureSubscriptionId" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureCdnResourceGroupName" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureCdnProfileName" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsAzureCdnEndpointName" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+     <add key="AbFsApiVersion" value="2016-10-02" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
     </appSettings>
 </configuration>
