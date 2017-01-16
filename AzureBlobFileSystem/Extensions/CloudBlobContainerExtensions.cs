@@ -52,7 +52,8 @@ namespace AzureBlobFileSystem.Extensions
                 throw new ArgumentException("Path can't be empty");
             }
 
-            return container.GetBlockBlobReference(path.Replace("\\", "/")).Exists();
+            path = path.Replace("\\", "/");
+            return container.GetBlockBlobReference(path).Exists();
         }
     }
 }

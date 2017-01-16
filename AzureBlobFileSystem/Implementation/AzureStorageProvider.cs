@@ -1,4 +1,5 @@
 ﻿using AzureBlobFileSystem.Contract;
+using AzureBlobFileSystem.Infrastructure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -6,11 +7,11 @@ namespace AzureBlobFileSystem.Implementation
 {
     public class AzureStorageProvider : IAzureStorageProvider
     {
-        private readonly IConfigurationService _configurationService;
+        private readonly IAzureStorageConfiguration _azureStorageConfiguration;
 
-        public AzureStorageProvider(IConfigurationService configurationService)
+        public AzureStorageProvider(IAzureStorageConfiguration azureStorageConfiguration)
         {
-            _configurationService = configurationService;
+            _azureStorageConfiguration = azureStorageConfiguration;
             StorageAccount = GetStorageAccount();
         }
 
@@ -26,14 +27,14 @@ namespace AzureBlobFileSystem.Implementation
         private CloudBlobContainer GetContainer()
         {
             var blobClient = StorageAccount.CreateCloudBlobClient();
-            var container = blobClient.GetContainerReference(_configurationService.ContainerName);
+            var container = blobClient.GetContainerReference(_azureStorageConfiguration.ContainerName);
             container.CreateIfNotExists(BlobContainerPublicAccessType.Blob);
             return container;
         }
 
         private CloudStorageAccount GetStorageAccount()
         {
-            return CloudStorageAccount.Parse(_configurationService.StorageAccountConnectionString);
+            return CloudStorageAccount.Parse(_azureStorageConfiguration.StorageAccountConnectionString);
         }
     }
 }

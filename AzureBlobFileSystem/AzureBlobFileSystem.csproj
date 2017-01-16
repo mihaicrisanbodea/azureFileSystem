@@ -61,6 +61,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Spatial, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\System.Spatial.5.6.4\lib\net40\System.Spatial.dll</HintPath>
       <Private>True</Private>
@@ -68,9 +69,15 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contract\IAzureBlobItemService.cs" />
+    <Compile Include="Contract\IAzureCdnService.cs" />
+    <Compile Include="Contract\IAzureOAuthProvider.cs" />
+    <Compile Include="Contract\IBusinessConfiguration.cs" />
     <Compile Include="Extensions\CloudBlobContainerExtensions.cs" />
-    <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Implementation\AzureBlobItemService.cs" />
+    <Compile Include="Implementation\AzureCdnService.cs" />
+    <Compile Include="Implementation\AzureOAuthProvider.cs" />
     <Compile Include="Implementation\AzureStorageProvider.cs" />
     <Compile Include="Implementation\BlobMetadataService.cs" />
     <Compile Include="Implementation\ConfigurationService.cs" />
@@ -81,14 +88,18 @@
     <Compile Include="Implementation\StorageFolderService.cs" />
     <Compile Include="Contract\IAzureStorageProvider.cs" />
     <Compile Include="Contract\IBlobMetadataService.cs" />
-    <Compile Include="Contract\IConfigurationService.cs" />
     <Compile Include="Contract\IFileInfoService.cs" />
     <Compile Include="Contract\IFolderInfoService.cs" />
     <Compile Include="Contract\IPathValidationService.cs" />
     <Compile Include="Contract\IStorageFileService.cs" />
     <Compile Include="Contract\IStorageFolderService.cs" />
+    <Compile Include="Infrastructure\IAuthenticationConfiguration.cs" />
+    <Compile Include="Infrastructure\IAzureCdnConfiguration.cs" />
+    <Compile Include="Infrastructure\IAzureStorageConfiguration.cs" />
+    <Compile Include="Model\AuthenticationToken.cs" />
     <Compile Include="Model\BlobMetadata.cs" />
     <Compile Include="Model\FileInfo.cs" />
+    <Compile Include="Model\FileToCopy.cs" />
     <Compile Include="Model\FolderInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

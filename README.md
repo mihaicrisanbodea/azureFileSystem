@@ -8,14 +8,22 @@ CRUD on files and folders.
 
 After installing [AzureBlob.FileSystem](https://www.nuget.org/packages/AzureBlob.FileSystem), check the app.config/web.config file.
 Replace `AbFsStorageAccountConnectionString` and `AbFsContainerName` with the correct values for the Azure storage used.
+Also, for using AzureCdn replace `AbFsAzureTenantId`, `AbFsAzureUserId`, `AbFsAzureUserKey`, `AbFsAzureSubscriptionId`,
+`AbFsAzureCdnResourceGroupName`, `AbFsAzureCdnProfileName` and `AbFsAzureCdnEndpointName`.
 
 Dependencies need to be registered in the dependency injection container.
-Following registrations are needed (Unity syntax used).
+Following registrations are needed (SimpleInjector syntax used).
 
 ```
 container.Register<IAzureStorageProvider, AzureStorageProvider>();
+container.Register<IAzureBlobItemService, AzureBlobItemService>();
+container.Register<IAzureOAuthProvider, AzureOAuthProvider>();
+container.Register<IAzureCdnService, AzureCdnService>();
+container.Register<IAuthenticationConfiguration, ConfigurationService>();
+container.Register<IAzureCdnConfiguration, ConfigurationService>();
+container.Register<IAzureStorageConfiguration, ConfigurationService>();
 container.Register<IBlobMetadataService, BlobMetadataService>();
-container.Register<IConfigurationService, ConfigurationService>();
+container.Register<IBusinessConfiguration, ConfigurationService>();
 container.Register<IFileInfoService, FileInfoService>();
 container.Register<IFolderInfoService, FolderInfoService>();
 container.Register<IPathValidationService, PathValidationService>();

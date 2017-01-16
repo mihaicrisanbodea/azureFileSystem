@@ -25,10 +25,16 @@ namespace AzureBlobFileSystem.Contract
         /// <param name="stream">
         /// The filestream to be saved.
         /// </param>
+        /// <param name="preLoadToCdn">
+        /// Optional parameter specifying if the file should be pre loaded to cdn.
+        /// Precondition: stream should not be null.
+        /// TRUE = update cdn
+        /// FALSE = don't update cdn
+        /// </param>
         /// <returns>
         /// The information for the file created.
         /// </returns>
-        FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null);
+        FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null, bool preLoadToCdn = false);
 
         /// <summary>
         /// List the information for all the files that start with a given prefix and
@@ -47,7 +53,7 @@ namespace AzureBlobFileSystem.Contract
         /// <returns>
         /// The list with the file information(s) for the given path.
         /// </returns>
-        List<FileInfo> List(string prefix, bool firstLevelOnly = false ,bool includeMetadata = false);
+        List<FileInfo> List(string prefix, bool firstLevelOnly = false, bool includeMetadata = false);
 
         /// <summary>
         /// Copy the file from a path to another.
@@ -66,8 +72,12 @@ namespace AzureBlobFileSystem.Contract
         /// TRUE = don't delete source
         /// FALSE = delete source
         /// </param>
-        /// <returns> </returns>
-        Task CopyAsync(string sourcePath, string destinationPath, bool keepSource = true);
+        /// <param name="updateCdn">
+        /// Optional parameter specifying whether the cdn should be updated.
+        /// TRUE = update cdn
+        /// FALSE = don't update cdn
+        /// </param>
+        Task CopyAsync(string sourcePath, string destinationPath, bool keepSource = true, bool updateCdn = false);
 
         /// <summary>
         /// Copy the file from a path to another.
@@ -85,11 +95,10 @@ namespace AzureBlobFileSystem.Contract
         /// Destination path (copy file to)
         /// </param>
         /// <param name="keepSource">
-        /// Optional parameter specifying whether the source should be deleted or not.
+        /// Parameter specifying whether the source should be deleted or not.
         /// TRUE = don't delete source
         /// FALSE = delete source
         /// </param>
-        /// <returns></returns>
         Task CopyAsync(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource);
 
         /// <summary>
@@ -98,6 +107,20 @@ namespace AzureBlobFileSystem.Contract
         /// <param name="path">
         /// Source path (delete file with path).
         /// </param>
-        void Delete(string path);
+        /// <param name="purgeCdn">
+        /// Optional parameter specifying if the file should be purged from the cdn.
+        /// TRUE = purge file from cdn
+        /// FALSE = don't purge file from cdn
+        /// </param>
+        void Delete(string path, bool purgeCdn = false);
+
+        /// <summary>
+        /// Delete the specified blob.
+        /// Asynchronous operation.
+        /// </summary>
+        /// <param name="blob">
+        /// The blob to delete.
+        /// </param>
+        Task DeleteAsync(CloudBlockBlob blob);
     }
 }

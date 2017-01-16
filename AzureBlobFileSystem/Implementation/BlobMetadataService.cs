@@ -7,11 +7,11 @@ namespace AzureBlobFileSystem.Implementation
 {
     public class BlobMetadataService : IBlobMetadataService
     {
-        private readonly IConfigurationService _configurationService;
+        private readonly IBusinessConfiguration _businessConfiguration;
 
-        public BlobMetadataService(IConfigurationService configurationService)
+        public BlobMetadataService(IBusinessConfiguration businessConfiguration)
         {
-            _configurationService = configurationService;
+            _businessConfiguration = businessConfiguration;
         }
 
         public BlobMetadata List(CloudBlob blob)
@@ -29,7 +29,7 @@ namespace AzureBlobFileSystem.Implementation
             if (lastModifiedDate != null)
             {
                 metadataResult.Add("modified", lastModifiedDate.Value.DateTime.ToUniversalTime()
-                    .ToString(_configurationService.UtcTimeFormat));
+                    .ToString(_businessConfiguration.UtcTimeFormat));
             }
 
             return metadataResult;

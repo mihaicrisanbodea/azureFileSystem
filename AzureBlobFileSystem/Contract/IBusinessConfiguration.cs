@@ -1,11 +1,7 @@
 ﻿namespace AzureBlobFileSystem.Contract
 {
-    public interface IConfigurationService
+    public interface IBusinessConfiguration
     {
-        string StorageAccountConnectionString { get; }
-
-        string ContainerName { get; }
-
         string DefaultFileName { get; }
 
         string UtcTimeFormat { get; }

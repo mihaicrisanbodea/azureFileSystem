@@ -15,25 +15,28 @@ namespace AzureBlobFileSystem.Implementation
     public class StorageFileService : IStorageFileService
     {
         private readonly IAzureStorageProvider _azureStorageProvider;
+        private readonly IAzureBlobItemService _azureBlobItemService;
+        private readonly IAzureCdnService _azureCdnService;
         private readonly IPathValidationService _pathValidationService;
-        private readonly IConfigurationService _configurationService;
         private readonly IFileInfoService _fileInfoService;
         private readonly IBlobMetadataService _blobMetadataService;
 
         public StorageFileService(IAzureStorageProvider azureStorageProvider, 
-            IPathValidationService pathValidationService, 
-            IConfigurationService configurationService, 
+            IAzureBlobItemService azureBlobItemService,
+            IAzureCdnService azureCdnService,
+            IPathValidationService pathValidationService,
             IFileInfoService fileInfoService, 
             IBlobMetadataService blobMetadataService)
         {
             _azureStorageProvider = azureStorageProvider;
+            _azureBlobItemService = azureBlobItemService;
+            _azureCdnService = azureCdnService;
             _pathValidationService = pathValidationService;
-            _configurationService = configurationService;
             _fileInfoService = fileInfoService;
             _blobMetadataService = blobMetadataService;
         }
 
-        public FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null)
+        public FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null, bool preLoadToCdn = false)
         {
             _pathValidationService.ValidateNotEmpty(path);
             CloudBlobContainer container = _azureStorageProvider.Container;
@@ -42,6 +45,11 @@ namespace AzureBlobFileSystem.Implementation
             var blob = container.GetBlockBlobReference(path);
             TrySetContentType(blob, path);
             TryUploadStream(stream, blob, blobMetadata);
+
+            if (preLoadToCdn && stream != null)
+            {
+                _azureCdnService.LoadAsync(path).GetAwaiter();
+            }
 
             return new FileInfo
             {
@@ -52,37 +60,27 @@ namespace AzureBlobFileSystem.Implementation
 
         public List<FileInfo> List(string prefix, bool firstLevelOnly = false, bool includeMetadata = false)
         {
-            var blobItems = ListBlobsAsync(prefix, includeMetadata).Result;
+            var listingDetails = GetListingDetails(includeMetadata);
+            var blobItems = _azureBlobItemService.ListBlobsAsync(prefix, listingDetails).Result;
             if (firstLevelOnly)
             {
-                blobItems = FilterListChildBlobItems(prefix, blobItems).ToList();
+                blobItems = FilterChildBlobItems(prefix, blobItems).ToList();
             }
             return _fileInfoService.Build(blobItems, includeMetadata);
         }
         
-        public async Task CopyAsync(string sourcePath, string destinationPath, bool keepSource = true)
+        public async Task CopyAsync(string sourcePath, string destinationPath, bool keepSource = true, bool updateCdn = false)
         {
             var container = _azureStorageProvider.Container;
-            await CopyAsync(container, sourcePath, destinationPath, keepSource);
+            await CopyAsync(container, sourcePath, destinationPath, keepSource, updateCdn);
         }
 
         public async Task CopyAsync(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource)
         {
-            _pathValidationService.ValidateFileExists(sourcePath, container);
-            destinationPath = container.EnsureFileDoesNotExist(destinationPath);
-
-            var source = container.GetBlockBlobReference(sourcePath);
-            var target = container.GetBlockBlobReference(destinationPath);
-
-            await target.StartCopyAsync(source);
-
-            if (!keepSource)
-            {
-                source.Delete();
-            }
+            await CopyAsync(container, sourcePath, destinationPath, keepSource, false);
         }
 
-        public void Delete(string path)
+        public void Delete(string path, bool purgeCdn = false)
         {
             _pathValidationService.ValidateFileExists(path);
             var container = _azureStorageProvider.Container;
@@ -93,25 +91,23 @@ namespace AzureBlobFileSystem.Implementation
             }
 
             var blob = container.GetBlockBlobReference(path);
-            blob.Delete();
+
+            DeleteAsync(blob, purgeCdn).GetAwaiter();
         }
 
-        private async Task<List<IListBlobItem>> ListBlobsAsync(string prefix, bool includeMetadata)
+        public async Task DeleteAsync(CloudBlockBlob blob)
         {
-            var container = _azureStorageProvider.Container;
-            var results = new List<IListBlobItem>();
-            BlobContinuationToken token = null;
+            await DeleteAsync(blob, false);
+        }
 
-            do
+        private async Task DeleteAsync(CloudBlockBlob blob, bool purgeCdn)
+        {
+            blob.Delete();
+
+            if (purgeCdn)
             {
-                var listingDetails = GetListingDetails(includeMetadata);
-                var blobResultSegment = await container.ListBlobsSegmentedAsync(prefix, true,
-                    listingDetails, _configurationService.BlobListingPageSize, token, null, null);
-                token = blobResultSegment.ContinuationToken;
-                results.AddRange(blobResultSegment.Results);
-            } while (token != null);
-
-            return results;
+                await _azureCdnService.PurgeAsync(blob.Name);
+            }
         }
 
         private static BlobListingDetails GetListingDetails(bool includeMetadata)
@@ -121,7 +117,32 @@ namespace AzureBlobFileSystem.Implementation
                 : BlobListingDetails.None;
         }
 
-        private IEnumerable<IListBlobItem> FilterListChildBlobItems(string prefix, List<IListBlobItem> blobItems)
+        private async Task CopyAsync(CloudBlobContainer container, string sourcePath, string destinationPath, bool keepSource, bool updateCdn)
+        {
+            _pathValidationService.ValidateFileExists(sourcePath, container);
+            destinationPath = container.EnsureFileDoesNotExist(destinationPath);
+
+            var source = container.GetBlockBlobReference(sourcePath);
+            var target = container.GetBlockBlobReference(destinationPath);
+
+            await target.StartCopyAsync(source);
+
+            if (updateCdn)
+            {
+                await _azureCdnService.LoadAsync(destinationPath);
+            }
+
+            if (!keepSource)
+            {
+                source.Delete();
+                if (updateCdn)
+                {
+                    await _azureCdnService.PurgeAsync(sourcePath);
+                }
+            }
+        }
+
+        private IEnumerable<IListBlobItem> FilterChildBlobItems(string prefix, List<IListBlobItem> blobItems)
         {
             prefix = $"{prefix}/";
 

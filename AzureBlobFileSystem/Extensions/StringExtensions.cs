@@ -4,28 +4,28 @@ namespace AzureBlobFileSystem.Extensions
 {
     public static class StringExtensions
     {
-        public static string ReplaceFirstOccurrence(this string value, string oldValue, string newValue)
+        public static string ReplacePathPrefix(this string path, string oldValue, string newValue)
         {
-            ValidateString(value, nameof(value));
+            ValidateString(path, nameof(path));
             ValidateString(oldValue, nameof(oldValue));
             ValidateString(newValue, nameof(newValue));
 
-            var valueLength = value.Length;
+            var valueLength = path.Length;
             var oldValueLength = oldValue.Length;
 
             if (oldValueLength > valueLength)
             {
-                throw new ArgumentException($"String to replace invalid. Cannot replace {oldValue} in {value}");
+                throw new ArgumentException($"String to replace invalid. Cannot replace {oldValue} in {path}");
             }
 
-            var startIndex = value.IndexOf(oldValue, StringComparison.Ordinal);
+            var startIndex = path.IndexOf(oldValue, StringComparison.Ordinal);
 
             if (startIndex == -1)
             {
-                return value;
+                return path;
             }
 
-            var suffix = value.Remove(startIndex, oldValueLength + 1);
+            var suffix = path.Remove(startIndex, oldValueLength + 1);
             return $"{newValue}/{suffix}";
         }
 

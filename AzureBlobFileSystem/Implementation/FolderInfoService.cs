@@ -50,7 +50,7 @@ namespace AzureBlobFileSystem.Implementation
                     continue;
                 }
 
-                TryUpdateFolderCount(partialDirectoryPath, folderInfoDictionary);
+                TryUpdateParentFolderCount(partialDirectoryPath, folderInfoDictionary);
                 folderInfoDictionary.Add(partialDirectoryPath, new FolderInfo { RelativePath = partialDirectoryPath.TrimEnd('/') });
             }
 
@@ -59,7 +59,7 @@ namespace AzureBlobFileSystem.Implementation
             folderInfoDictionary[partialDirectoryPath].FileRelativePaths.Add(sb.ToString());
         }
 
-        private static void TryUpdateFolderCount(string directoryPath, Dictionary<string, FolderInfo> folderInfoDictionary)
+        private static void TryUpdateParentFolderCount(string directoryPath, Dictionary<string, FolderInfo> folderInfoDictionary)
         {
             var cleanPath = directoryPath.TrimEnd('/');
             var lastIndex = cleanPath.LastIndexOf('/') + 1;

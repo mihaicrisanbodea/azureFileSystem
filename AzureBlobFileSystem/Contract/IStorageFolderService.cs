@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using AzureBlobFileSystem.Model;
 
 namespace AzureBlobFileSystem.Contract
@@ -36,7 +35,6 @@ namespace AzureBlobFileSystem.Contract
         /// Copy the files and folders from a source content.
         /// It can be also used as a 'MOVE' operation by changing the 
         /// optional 'keepSource' parameter.
-        /// Asynchronous operation.
         /// </summary>
         /// <param name="sourcePath">
         /// Source path (copy files from)
@@ -49,8 +47,13 @@ namespace AzureBlobFileSystem.Contract
         /// TRUE = don't delete source
         /// FALSE = delete source
         /// </param>
+        /// <param name="updateCdn">
+        /// Optional parameter specifying whether the cdn should be updated.
+        /// TRUE = update cdn   
+        /// FALSE = don't update cdn
+        /// </param>
         /// <returns></returns>
-        Task CopyAsync(string sourcePath, string destinationPath, bool keepSource = true);
+        void Copy(string sourcePath, string destinationPath, bool keepSource = true, bool updateCdn = false);
 
         /// <summary>
         /// Delete the files and folders from a specific path.
@@ -58,6 +61,11 @@ namespace AzureBlobFileSystem.Contract
         /// <param name="path">
         /// The path from the root folder to delete (including children).
         /// </param>
-        void Delete(string path);
+        /// <param name="purgeCdn">
+        /// Optional parameter specifying if the files in the path should be purged from the cdn.
+        /// TRUE = purge file from cdn
+        /// FALSE = don't purge file from cdn
+        /// </param>
+        void Delete(string path, bool purgeCdn = false);
     }
 }
