@@ -8,7 +8,7 @@ CRUD on files and folders.
 
 After installing [AzureBlob.FileSystem](https://www.nuget.org/packages/AzureBlob.FileSystem), check the app.config/web.config file.
 Replace `AbFsStorageAccountConnectionString` and `AbFsContainerName` with the correct values for the Azure storage used.
-Also, for using AzureCdn replace `AbFsAzureTenantId`, `AbFsAzureUserId`, `AbFsAzureUserKey`, `AbFsAzureSubscriptionId`,
+Also, for using AzureCdn update values for `AbFsAzureTenantId`, `AbFsAzureUserId`, `AbFsAzureUserKey`, `AbFsAzureSubscriptionId`,
 `AbFsAzureCdnResourceGroupName`, `AbFsAzureCdnProfileName` and `AbFsAzureCdnEndpointName`.
 
 Dependencies need to be registered in the dependency injection container.
