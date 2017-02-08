@@ -26,7 +26,7 @@ namespace AzureBlobFileSystem.Implementation
             do
             {
                 var blobResultSegment = await container.ListBlobsSegmentedAsync(prefix, true,
-                    listingDetails, _businessConfiguration.BlobListingPageSize, token, null, null);
+                    listingDetails, _businessConfiguration.BlobListingPageSize, token, null, null).ConfigureAwait(false);
                 token = blobResultSegment.ContinuationToken;
                 results.AddRange(blobResultSegment.Results);
             } while (token != null);
