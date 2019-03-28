@@ -27,6 +27,7 @@ container.Register<IBusinessConfiguration, ConfigurationService>();
 container.Register<IFileInfoService, FileInfoService>();
 container.Register<IFolderInfoService, FolderInfoService>();
 container.Register<IPathValidationService, PathValidationService>();
+container.Register<IMetadataValidationService, MetadataValidationService>();
 container.Register<IStorageFileService, StorageFileService>();
 container.Register<IStorageFolderService, StorageFolderService>();
 ```
