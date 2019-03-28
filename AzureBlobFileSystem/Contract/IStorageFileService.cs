@@ -23,7 +23,7 @@ namespace AzureBlobFileSystem.Contract
         /// accepting the properties to be saved along with the file.
         /// </param>
         /// <param name="stream">
-        /// The filestream to be saved.
+        /// The fileStream to be saved.
         /// </param>
         /// <param name="preLoadToCdn">
         /// Optional parameter specifying if the file should be pre loaded to cdn.

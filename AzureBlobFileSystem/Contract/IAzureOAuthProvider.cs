@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace AzureBlobFileSystem.Contract
+﻿namespace AzureBlobFileSystem.Contract
 {
     public interface IAzureOAuthProvider
     {

@@ -20,13 +20,15 @@ namespace AzureBlobFileSystem.Implementation
         private readonly IPathValidationService _pathValidationService;
         private readonly IFileInfoService _fileInfoService;
         private readonly IBlobMetadataService _blobMetadataService;
+        private readonly IMetadataValidationService _metadataValidationService;
 
         public StorageFileService(IAzureStorageProvider azureStorageProvider, 
             IAzureBlobItemService azureBlobItemService,
             IAzureCdnService azureCdnService,
             IPathValidationService pathValidationService,
             IFileInfoService fileInfoService, 
-            IBlobMetadataService blobMetadataService)
+            IBlobMetadataService blobMetadataService, 
+            IMetadataValidationService metadataValidationService)
         {
             _azureStorageProvider = azureStorageProvider;
             _azureBlobItemService = azureBlobItemService;
@@ -34,11 +36,13 @@ namespace AzureBlobFileSystem.Implementation
             _pathValidationService = pathValidationService;
             _fileInfoService = fileInfoService;
             _blobMetadataService = blobMetadataService;
+            _metadataValidationService = metadataValidationService;
         }
 
         public FileInfo Create(string path, BlobMetadata blobMetadata = null, Stream stream = null, bool preLoadToCdn = false)
         {
             _pathValidationService.ValidateNotEmpty(path);
+            _metadataValidationService.ValidateMetadata(blobMetadata);
             CloudBlobContainer container = _azureStorageProvider.Container;
             path = container.EnsureFileDoesNotExist(path);
 

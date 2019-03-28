@@ -44,7 +44,7 @@ namespace AzureBlobFileSystem.Implementation
 
         public string ApiVersion => ConfigurationManager.AppSettings["AbFsApiVersion"];
 
-        private int GetBlobListingPageSize()
+        private static int GetBlobListingPageSize()
         {
             var pageSizeString = ConfigurationManager.AppSettings["AbFsBlobListingPageSize"];
             int pageSize;

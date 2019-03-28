@@ -11,7 +11,7 @@ namespace AzureBlobFileSystem.Contract
         /// <summary>
         /// Create a folder at the given path. 
         /// Because Azure storage does not allow empty folders, 
-        /// it adds an empty file aswell.
+        /// it adds an empty file as well.
         /// </summary>
         /// <param name="path">
         /// The path relative to the container at which the folder will be created

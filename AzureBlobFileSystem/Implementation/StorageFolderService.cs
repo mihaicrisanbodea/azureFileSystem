@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -72,7 +71,7 @@ namespace AzureBlobFileSystem.Implementation
 
             var deleteStructure = GetDeleteStructure(path).ToList();
 
-            DeleteFiles(deleteStructure, purgeCdn);;
+            DeleteFiles(deleteStructure, purgeCdn);
         }
 
         public List<FolderInfo> List(string prefix)
@@ -90,8 +89,7 @@ namespace AzureBlobFileSystem.Implementation
 
             foreach (var blob in container.GetDirectoryReference(sourcePath).ListBlobs())
             {
-                var blockBlob = blob as CloudBlockBlob;
-                if (blockBlob != null)
+                if (blob is CloudBlockBlob blockBlob)
                 {
                     var fileName = blockBlob.Name;
                     var newFileName = fileName.ReplacePathPrefix(sourcePath, destinationPath);
@@ -104,9 +102,7 @@ namespace AzureBlobFileSystem.Implementation
                     continue;
                 }
 
-                var blobDirectory = blob as CloudBlobDirectory;
-
-                if (blobDirectory != null)
+                if (blob is CloudBlobDirectory blobDirectory)
                 {
                     var folderPath = GetPath(blobDirectory);
                     var newFolderPathSuffix = folderPath.ReplacePathPrefix(sourcePath, string.Empty);
@@ -181,8 +177,7 @@ namespace AzureBlobFileSystem.Implementation
 
             foreach (var blob in container.GetDirectoryReference(path).ListBlobs())
             {
-                var blockBlob = blob as CloudBlockBlob;
-                if (blockBlob != null)
+                if (blob is CloudBlockBlob blockBlob)
                 {
                     yield return blockBlob;
                     continue;
