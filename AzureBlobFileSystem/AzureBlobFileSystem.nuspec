@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>AzureBlob.FileSystem</id>
-    <version>1.2.0</version>
+    <version>2.0.0</version>
     <authors>Mihai Crisan-Bodea</authors>
     <owners>Mihai Crisan-Bodea</owners>
     <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
@@ -10,11 +10,11 @@
     <iconUrl>https://github.com/mihaicrisanbodea/azureFileSystem/blob/master/folder-icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Functionality for replicating file system onto Microsoft Azure blob storage</description>
-    <releaseNotes>Optional Azure CDN pre-load / purge functionality</releaseNotes>
+    <releaseNotes>Update to .Net 4.6.2</releaseNotes>
     <copyright>Copyright ©2017</copyright>
     <tags>blob filesystem AzureBlob blobfilesystem</tags>
     <dependencies>
-      <dependency id="WindowsAzure.Storage" version="7.2.1" />
+      <dependency id="WindowsAzure.Storage" version="9.3.3" />
     </dependencies>
   </metadata>
   <files>
